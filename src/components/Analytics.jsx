@@ -139,7 +139,7 @@ export default function Analytics({ history, xp, bestStreak, level, setScreen, s
           { label: 'Best streak â¥ 10', ok: bestStreak >= 10, note: `best: ${bestStreak}` },
         ].map(({ label, ok, note }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, fontSize: 13.5 }}>
-            <div style={{ width: 20, height: 20, borderRadius: 50, flexShrink: 0, background: ok ? 'var(--green)" : 'var(--bg-elevated)', border: `1px solid ${ok ? 'var(--green)' : 'var(--border-md)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ok ? 'â' : ''}</div>
+            <div style={{ width: 20, height: 20, borderRadius: 50, flexShrink: 0, background: ok ? 'var(--green)' : 'var(--bg-elevated)', border: `1px solid ${ok ? 'var(--green)' : 'var(--border-md)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ok ? 'â' : ''}</div>
             <div style={{ flex: 1, color: ok ? 'var(--text)' : 'var(--text-2)' }}>{label}</div>
             <div style={{ fontSize: 12, color: ok ? 'var(--green)' : 'var(--text-3)' }}>{note}</div>
           </div>
