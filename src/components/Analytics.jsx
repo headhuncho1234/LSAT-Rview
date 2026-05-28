@@ -1,4 +1,4 @@
-import { Brain, BookOpen, Target, ArrowLeft, TrendingUp, Trophy, Clock } from 'lucide-react'
+import { Brain, BookOpen, Target, ArrowLeft, TrendingUp, Trophy } from 'lucide-react'
 import { SECTION_META } from '../constants'
 
 function pctColor(p) {
@@ -9,7 +9,6 @@ function pctColor(p) {
 
 function TypeRow({ type, correct, total, sec, onDrill }) {
   const pct = Math.round((correct / total) * 100)
-  const meta = SECTION_META[sec]
   return (
     <div style={{ marginBottom: 18 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -21,14 +20,14 @@ function TypeRow({ type, correct, total, sec, onDrill }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: pctColor(pct) }}>{pct}%</span>
           {pct < 80 && (
-            <button onClick={() => onDrill(sec, type)} style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'var(--red-dim)', border: '1px solid var(--red-border)', color: 'var(--red)', cursor: 'pointer' }}>Drill â</button>
+            <button onClick={() => onDrill(sec, type)} style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'var(--red-dim)', border: '1px solid var(--red-border)', color: 'var(--red)', cursor: 'pointer' }}>Drill</button>
           )}
         </div>
       </div>
       <div className="perf-bar-wrap"><div className="perf-bar" style={{ width: `${pct}%`, background: pctColor(pct) }} /></div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
-        <span>{correct} correct Â· {total - correct} wrong</span>
-        <span>{pct >= 88 ? 'â Target met' : `Need ${88 - pct}% more`}</span>
+        <span>{correct} correct / {total - correct} wrong</span>
+        <span>{pct >= 88 ? 'Target met' : `Need ${88 - pct}% more`}</span>
       </div>
     </div>
   )
@@ -41,11 +40,11 @@ export default function Analytics({ history, xp, bestStreak, level, setScreen, s
   const avgTime = total > 0 ? Math.round(history.reduce((s, h) => s + h.timeTaken, 0) / total) : 0
 
   const scoreEst = () => {
-    if (total < 5) return 'â'
-    if (acc >= 92) return '176â180'
-    if (acc >= 88) return '172â175'
-    if (acc >= 84) return '168â171'
-    if (acc >= 79) return '164â167'
+    if (total < 5) return '--'
+    if (acc >= 92) return '176-180'
+    if (acc >= 88) return '172-175'
+    if (acc >= 84) return '168-171'
+    if (acc >= 79) return '164-167'
     return '< 164'
   }
 
@@ -90,7 +89,7 @@ export default function Analytics({ history, xp, bestStreak, level, setScreen, s
       <p style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 24 }}>Performance snapshot across {total} questions.</p>
       <div className="stat-grid" style={{ marginBottom: 24 }}>
         <div className="stat-card"><div className="stat-label">Overall accuracy</div><div className="stat-value" style={{ color: pctColor(acc) }}>{acc}%</div><div className="stat-sub">{correct}/{total} correct</div></div>
-        <div className="stat-card"><div className="stat-label">Est. score</div><div className="stat-value" style={{ color: 'var(--purple)' }}>{scoreEst()}</div><div className="stat-sub">target: 176â180</div></div>
+        <div className="stat-card"><div className="stat-label">Est. score</div><div className="stat-value" style={{ color: 'var(--purple)' }}>{scoreEst()}</div><div className="stat-sub">target: 176-180</div></div>
         <div className="stat-card"><div className="stat-label">Avg time</div><div className="stat-value" style={{ color: avgTime <= 90 ? 'var(--green)' : 'var(--gold)' }}>{avgTime}s</div><div className="stat-sub">{avgTime <= 90 ? 'on pace' : 'over target'}</div></div>
         <div className="stat-card"><div className="stat-label">Best streak</div><div className="stat-value" style={{ color: bestStreak >= 5 ? 'var(--gold)' : 'var(--text)' }}>{bestStreak}</div><div className="stat-sub">recent: {recentAcc}% (last 20)</div></div>
       </div>
@@ -105,7 +104,7 @@ export default function Analytics({ history, xp, bestStreak, level, setScreen, s
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {sec === 'LR' ? <Brain size={14} color={meta.color} /> : <BookOpen size={14} color={meta.color} />}
                   <span style={{ fontSize: 14, fontWeight: 500 }}>{meta.label}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{st}q Â· avg {avg}s</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{st}q / avg {avg}s</span>
                 </div>
                 <span style={{ fontSize: 16, fontWeight: 700, color: pctColor(pct) }}>{pct}%</span>
               </div>
@@ -118,7 +117,7 @@ export default function Analytics({ history, xp, bestStreak, level, setScreen, s
         <div className="card" style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>By Question Type</div>
-            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>sorted worst â best</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>sorted worst to best</span>
           </div>
           {typeArr.map(({ type, correct: c, total: t, sec }) => (
             <TypeRow key={`${sec}::${type}`} type={type} correct={c} total={t} sec={sec} onDrill={handleDrill} />
@@ -131,15 +130,15 @@ export default function Analytics({ history, xp, bestStreak, level, setScreen, s
           <span style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-2)' }}>176+ Target Checklist</span>
         </div>
         {[
-          { label: 'Overall accuracy â¥ 90%', ok: acc >= 90, note: `you're at ${acc}%` },
-          { label: 'LR accuracy â¥ 88%', ok: (() => { const s = history.filter(h => h.section === 'LR'); return s.length >= 5 && s.filter(h => h.correct).length / s.length >= 0.88 })(), note: `${secStats.find(s => s.sec === 'LR')?.pct || 0}%` },
-          { label: 'RC accuracy â¥ 85%', ok: (() => { const s = history.filter(h => h.section === 'RC'); return s.length >= 5 && s.filter(h => h.correct).length / s.length >= 0.85 })(), note: `${secStats.find(s => s.sec === 'RC')?.pct || 0}%` },
-          { label: 'LR avg time â¤ 84s', ok: (() => { const s = history.filter(h => h.section === 'LR'); return s.length >= 5 && s.reduce((a, h) => a + h.timeTaken, 0) / s.length <= 84 })(), note: `${secStats.find(s => s.sec === 'LR')?.avg || 'â'}s avg` },
-          { label: 'No type below 80% (â¥5 done)', ok: typeArr.filter(t => t.total >= 5).every(t => t.correct / t.total >= 0.80), note: `${typeArr.filter(t => t.total >= 5 && t.correct / t.total < 0.80).length} gaps` },
-          { label: 'Best streak â¥ 10', ok: bestStreak >= 10, note: `best: ${bestStreak}` },
+          { label: 'Overall accuracy >= 90%', ok: acc >= 90, note: `you are at ${acc}%` },
+          { label: 'LR accuracy >= 88%', ok: (() => { const s = history.filter(h => h.section === 'LR'); return s.length >= 5 && s.filter(h => h.correct).length / s.length >= 0.88 })(), note: `${secStats.find(s => s.sec === 'LR')?.pct || 0}%` },
+          { label: 'RC accuracy >= 85%', ok: (() => { const s = history.filter(h => h.section === 'RC'); return s.length >= 5 && s.filter(h => h.correct).length / s.length >= 0.85 })(), note: `${secStats.find(s => s.sec === 'RC')?.pct || 0}%` },
+          { label: 'LR avg time <= 84s', ok: (() => { const s = history.filter(h => h.section === 'LR'); return s.length >= 5 && s.reduce((a, h) => a + h.timeTaken, 0) / s.length <= 84 })(), note: `${secStats.find(s => s.sec === 'LR')?.avg || '--'}s avg` },
+          { label: 'No type below 80% (5+ done)', ok: typeArr.filter(t => t.total >= 5).every(t => t.correct / t.total >= 0.80), note: `${typeArr.filter(t => t.total >= 5 && t.correct / t.total < 0.80).length} gaps` },
+          { label: 'Best streak >= 10', ok: bestStreak >= 10, note: `best: ${bestStreak}` },
         ].map(({ label, ok, note }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, fontSize: 13.5 }}>
-            <div style={{ width: 20, height: 20, borderRadius: 50, flexShrink: 0, background: ok ? 'var(--green)' : 'var(--bg-elevated)', border: `1px solid ${ok ? 'var(--green)' : 'var(--border-md)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ok ? 'â' : ''}</div>
+            <div style={{ width: 20, height: 20, borderRadius: 50, flexShrink: 0, background: ok ? 'var(--green)' : 'var(--bg-elevated)', border: `1px solid ${ok ? 'var(--green)' : 'var(--border-md)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff' }}>{ok ? 'Y' : ''}</div>
             <div style={{ flex: 1, color: ok ? 'var(--text)' : 'var(--text-2)' }}>{label}</div>
             <div style={{ fontSize: 12, color: ok ? 'var(--green)' : 'var(--text-3)' }}>{note}</div>
           </div>
