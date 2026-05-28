@@ -1,5 +1,11 @@
 // api/generate.js — Vercel serverless function
-// Keeps ANTHROPIC_API_KEY server-side (never exposed to the browser)
+// Keeps OPENAI_API_KEY server-side (never exposed to the browser)
+
+const OpenAI = require('openai')
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -15,8 +21,8 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'section and questionType are required' })
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set. Add it to your Vercel environment variables.' })
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OPENAI_API_KEY is not set. Add it to your Vercel environment variables.' })
   }
 
   const sectionContext = {
@@ -46,40 +52,26 @@ Return ONLY valid JSON — no markdown fences, no preamble, no explanation outsi
 }`
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1200,
-        system: 'You are an elite LSAT instructor specializing in 175–180 score preparation. Generate realistic, hard LSAT questions with thorough explanations. Return ONLY valid JSON — absolutely no markdown.',
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const response = await client.responses.create({
+      model: 'gpt-5.5',
+      input: [
+        {
+          role: 'system',
+          content: `You are an elite LSAT instructor specializing in 175–180 score preparation.
+Generate realistic, hard LSAT questions with thorough explanations.
+Return ONLY valid JSON — absolutely no markdown.`
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ]
     })
 
-    if (!response.ok) {
-      const errText = await response.text()
-      console.error('Anthropic API error:', response.status, errText)
-      return res.status(500).json({ error: `Anthropic API error ${response.status}` })
-    }
+    const text = response.output_text || ''
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text || ''
+    const question = JSON.parse(text)
 
-    // Extract JSON robustly
-    const match = text.match(/\{[\s\S]*\}/)
-    if (!match) {
-      console.error('No JSON in response:', text)
-      return res.status(500).json({ error: 'Model returned unexpected format. Try again.' })
-    }
-
-    const question = JSON.parse(match[0])
-
-    // Validate required fields
     const required = ['stimulus', 'question', 'choices', 'correctAnswer', 'explanation']
     for (const field of required) {
       if (!question[field]) {
