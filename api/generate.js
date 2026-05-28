@@ -1,11 +1,5 @@
 // api/generate.js — Vercel serverless function
-// Keeps OPENAI_API_KEY server-side (never exposed to the browser)
-
-const OpenAI = require('openai')
-
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Uses OpenAI API — set OPENAI_API_KEY in Vercel environment variables
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -47,30 +41,46 @@ Return ONLY valid JSON — no markdown fences, no preamble, no explanation outsi
     "E": "fifth answer choice"
   },
   "correctAnswer": "A",
-  "explanation": "Thorough analysis: why the correct answer is logically necessary, and why each wrong answer specifically fails. Use precise LSAT terminology (sufficient condition, necessary condition, conclusion, premise, etc.).",
+  "explanation": "Thorough analysis: why the correct answer is logically necessary, and why each wrong answer specifically fails. Use precise LSAT terminology.",
   "strategy": "One expert strategic insight for approaching this specific question type under timed conditions."
 }`
 
   try {
-    const response = await client.responses.create({
-      model: 'gpt-5.5',
-      input: [
-        {
-          role: 'system',
-          content: `You are an elite LSAT instructor specializing in 175–180 score preparation.
-Generate realistic, hard LSAT questions with thorough explanations.
-Return ONLY valid JSON — absolutely no markdown.`
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 1200,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an elite LSAT instructor specializing in 175-180 score preparation. Generate realistic, hard LSAT questions with thorough explanations. Return ONLY valid JSON — absolutely no markdown.',
+          },
+          { role: 'user', content: prompt },
+        ],
+      }),
     })
 
-    const text = response.output_text || ''
+    if (!response.ok) {
+      const errText = await response.text()
+      console.error('OpenAI API error:', response.status, errText)
+      return res.status(500).json({ error: `OpenAI API error ${response.status}` })
+    }
 
-    const question = JSON.parse(text)
+    const data = await response.json()
+    const text = data.choices?.[0]?.message?.content || ''
+
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) {
+      console.error('No JSON in response:', text)
+      return res.status(500).json({ error: 'Model returned unexpected format. Try again.' })
+    }
+
+    const question = JSON.parse(match[0])
 
     const required = ['stimulus', 'question', 'choices', 'correctAnswer', 'explanation']
     for (const field of required) {
